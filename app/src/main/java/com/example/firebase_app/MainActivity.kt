@@ -197,7 +197,24 @@ fun AppAula() {
             // Cancelar
             Column(
             ) {
-                Button(onClick = {}) {
+                Button(onClick = {
+                    val db = Firebase.firestore
+
+                    val docRef = db.collection("users").document("2CcSuXsWZekqYz8OJFlg")
+                    docRef.get()
+                        .addOnSuccessListener { document ->
+                            if (document != null) {
+                                Log.d(TAG, "DocumentSnapshot data: ${document.data}")
+                            } else {
+                                Log.d(TAG, "No such document")
+                            }
+                        }
+                        .addOnFailureListener { exception ->
+                            Log.d(TAG, "get failed with ", exception)
+                        }
+
+
+                }) {
                     Text("Cancelar")
                 }
             }
