@@ -14,12 +14,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -198,27 +204,53 @@ fun AppAula() {
             Column(
             ) {
                 Button(onClick = {
-                    val db = Firebase.firestore
-
-                    val docRef = db.collection("users").document("2CcSuXsWZekqYz8OJFlg")
-                    docRef.get()
-                        .addOnSuccessListener { document ->
-                            if (document != null) {
-                                Log.d(TAG, "DocumentSnapshot data: ${document.data}")
-                            } else {
-                                Log.d(TAG, "No such document")
-                            }
-                        }
-                        .addOnFailureListener { exception ->
-                            Log.d(TAG, "get failed with ", exception)
-                        }
-
 
                 }) {
                     Text("Cancelar")
                 }
             }
         }
+
+        // Exibindos dados
+        Spacer(modifier = Modifier.height(16.dp)) // AQUI!
+
+        Row(
+            Modifier
+                .fillMaxWidth(),
+            Arrangement.Center
+        ) {
+            Text("Dados")
+        }
+
+        val data = remember { mutableStateListOf<Map<String, Any>>() }
+
+        LaunchedEffect(Unit) {
+            val db = Firebase.firestore
+
+            db.collection("users")
+                .get()
+                .addOnSuccessListener { result ->
+                    for (document in result) {
+                        data.add(document.data) // aqui salva todos os campos do documento
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    Log.w("TAG", "Erro ao buscar documentos.", exception)
+                }
+        }
+
+        val scrollState = rememberScrollState()
+
+        Column(modifier = Modifier.verticalScroll(scrollState)) {
+            for (doc in data) {
+                val nome = doc["nome"] as? String ?: "Sem nome"
+                val telefone = doc["telefone"] as? String ?: "Sem telefone"
+                Text(text = "Nome: $nome")
+                Text(text = "Telefone: $telefone")
+                Divider()
+            }
+        }
+
     }
 }
 
